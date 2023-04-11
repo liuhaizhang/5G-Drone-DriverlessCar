@@ -19,9 +19,9 @@ def put_img(queue, maxsize):
     '''获取摄像头的数据，这个没有部分使用多线程'''
     # 视频读取对象
     cap = cv2.VideoCapture(1)
-    # cap.set(3,1920) #设置摄像头宽度
-    # cap.set(4,1080) #设置摄像头高度
-    size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+    cap.set(3,1280) #设置摄像头宽度
+    cap.set(4,720) #设置摄像头高度
+    size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))) #构建宽度和高度的元组
     while cap.isOpened():
         # 读取一帧
         ret, frame = cap.read()
@@ -60,7 +60,7 @@ def push_frame(queue, remote_url):
                '-vcodec', 'rawvideo',
                '-pix_fmt', 'bgr24',
 
-               '-s', '640*480',  # 根据输入视频尺寸填写
+               '-s', '1280*720',  # 根据输入视频尺寸填写，要和put_img中设置的宽度和高度一样，不然拿到的画面会跳到
                '-r', '25',
                '-i', '-',  #视频输入是从pipe:0 中来
 
