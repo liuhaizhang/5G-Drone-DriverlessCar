@@ -130,3 +130,6 @@ def public_write_log(log_file,content,format = '%(asctime)s: %(message)s'):
     log.set_log(content)
     log.end_log()
 
+if __name__ == '__main__':
+    token = encode_token('car-0001')
+    print('token= ',token)

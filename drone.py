@@ -106,12 +106,12 @@ def push_frame(queue, remote_url):
 # 按间距中的绿色按钮以运行脚本。
 if __name__ == '__main__':
     '''
-    功能：收集急救车上救护仪器屏幕的数据，推流到srs服务器，签到再从srs服务器上获取数据，播放画面
+    功能：将无人机的画面，推流到srs服务器，签到再从srs服务器上获取数据，播放画面
     推流地址： rtmp://域名:端口/app/stream?token=xxxx
     1、rtmp，走rtmp的协议
     2、端口：是srs中配置rtmp的端口，默认使用的是1935 ，如果srs中配置的rtmp端口变化，这里就需要变化
     3、流地址：app 代表的一种应用的流的前缀，我们设置为急救车的编号，car-0001(当前急救车在数据库中设置的编号) 
-    4、stream：是具体流地址, car-0001-screen 具体流地址的设置：急救车编号-从哪里获取的流，screen是救护仪屏幕
+    4、stream：是具体流地址, car-0001-drone 具体流地址的设置：急救车编号-从哪里获取的流，screen是救护仪屏幕
     '''
     from util.need import check_ambulance_status #检查急救车是否有任务
     from util.need import encode_token#token认证
