@@ -12,9 +12,6 @@ CAR_NUMBER = 'car-0001'
 # srs服务器的web端
 REMOTE_IP = 'ambulance.thearay.net'
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#存放拉流医院麦克风脚本的进程id文件
-AUDIO_PID_PATH=os.path.join(BASE_DIR,'pid-file','audio_pid.txt')
-AUDIO_CODE_PATH = os.path.join(BASE_DIR,'test','audio.py') #测试的接口audio位置
 #时间格式
 TIME_FORMAT = time.strftime('%Y-%m-%d')
 TIME_STAMP = time.time()
@@ -124,11 +121,50 @@ def netstatus(queue):
 
 #普通进行直接打日志到文件中
 def public_write_log(log_file,content,format = '%(asctime)s: %(message)s'):
-    from util.log_ import BaseLog
-    log = BaseLog(log_file,format=format)
-    log.start_log()
-    log.set_log(content)
-    log.end_log()
+    '''
+    log_file = nobodaycar/时间.log
+    '''
+    try:
+        from util.log_ import BaseLog
+        log = BaseLog(log_file,format=format)
+        log.start_log()
+        log.set_log(content)
+        log.end_log()
+    except Exception as e:
+        pass
+
+#给推流脚本生成对应的pid文件
+def make_pid_file(filename,pid,who):
+    '''
+    filename: 一个推流脚本，一个pid文件，以nobodycar.py 生成nobodycar.txt 存放pid
+    pid：某个进程的pid
+    who：指明该pid是那个进程的
+    构建成={f'{whow}':f'{pid}'}
+    '''
+    try:
+        path = os.path.join(BASE_DIR,'pid_file',filename)
+        if os.path.exists(path):
+            #存在文件时，将会修改dic
+            with open(path,'r') as fr:
+                dic = json.loads(fr.readline())
+            dic[who]=pid
+
+            with open(path,'w') as fw:
+                fw.write(json.dumps(dic))
+        else:
+            #pid_file 文件夹不存在时，创建该文件夹
+            dir_path = os.path.dirname(path)
+            if not os.path.exists(dir_path):
+                os.mkdir(dir_path)
+            # 不存在时pid文件时，新建一个
+            with open(path,'w') as fp:
+                fp.write(json.dumps({f'{who}':pid}))
+    except Exception as e:
+        log_file = filename.split('.')[0] +'/'+time.strftime(TIME_FORMAT)+'.log'
+        public_write_log(log_file,f'{e}')
+
+
+
 
 if __name__ == '__main__':
     token = encode_token('car-0001')

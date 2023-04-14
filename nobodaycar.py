@@ -6,7 +6,10 @@ import subprocess
 import time
 from util.need import public_write_log #常规写日志
 import sys
-from util.need import TIME_FORMAT
+from util.need import TIME_FORMAT #字符串时间格式
+from util.need import make_pid_file #创建pid文件，保存pid文件
+import threading
+
 
 #从摄像头中获取到一帧一帧的画面
 def put_img(queue, maxsize):
@@ -16,7 +19,10 @@ def put_img(queue, maxsize):
     :param maxsize:  公共队列的最大值
     :return:
     '''
-    '''获取摄像头的数据，这个没有部分使用多线程'''
+    '''1、将图片处理进程的pid记录到pid文件中'''
+    threading.Thread(target=make_pid_file(os.path.basename(__file__).split('.')[0]+'.txt',os.getpid(),'image')).start()
+
+    '''2、获取摄像头的数据，这个没有部分使用多线程'''
     # 视频读取对象
     cap = cv2.VideoCapture(1)
     cap.set(3,1280) #设置摄像头宽度
@@ -78,7 +84,10 @@ def push_frame(queue, remote_url):
                ]
 
     child = subprocess.Popen(command, stdin=subprocess.PIPE)
-    print(child.pid,'ffmpeg进程的id')
+    print(child.pid,'ffmpeg进程的id','push的进程id',os.getpid())
+    '''1、将推流进程的pid记录到pid文件中'''
+    threading.Thread(target=make_pid_file(os.path.basename(__file__).split('.')[0]+'.txt',child.pid,'push')).start()
+
     def inner(child, queue):
         '''往subprocess的文本缓存队列中存储数据，这个可以使用多线程'''
         while True:
@@ -116,6 +125,10 @@ if __name__ == '__main__':
     # CAR_NUMBER 急救车编号
     # REMOTE_IP 服务器域名
     # 流地址
+    '''0、将主进程的pid记录到pid文件中'''
+    threading.Thread(target=make_pid_file(os.path.basename(__file__).split('.')[0]+'.txt',os.getpid(),'main')).start()
+    print('main 的pid',os.getpid())
+
     STREAM = f'{CAR_NUMBER}-nobodycar'
     '''1、开机时，先等待3秒，再推流操作'''
     print('开机等待3秒，等待电脑运行正常...')
@@ -138,9 +151,10 @@ if __name__ == '__main__':
     put.start()
     co = 1
     while True:
-        push = mp.Process(target=push_frame, args=(queue, remote_url))
-        push.start()
-        push.join() #等待ffmpeg进程推流结束，循环执行推流命令
+        # push = mp.Process(target=push_frame, args=(queue, remote_url))
+        # push.start()
+        # push.join() #等待ffmpeg进程推流结束，循环执行推流命令
+        push_frame(queue,remote_url)
         print(f'推流失败 {co}次：等待5秒...')
         time.sleep(5)
         co+=1

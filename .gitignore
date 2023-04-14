@@ -1,6 +1,6 @@
 __pycache__/
 *.idea
 *.git
-*.log
+logs/*.log
 test/
-
+pid_file/*.txt
