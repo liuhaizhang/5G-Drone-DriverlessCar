@@ -25,8 +25,8 @@ def put_img(queue, maxsize):
     '''2、获取摄像头的数据，这个没有部分使用多线程'''
     # 视频读取对象
     cap = cv2.VideoCapture(1)
-    cap.set(3,1280) #设置摄像头宽度
-    cap.set(4,720) #设置摄像头高度
+    cap.set(3,640) #设置摄像头宽度  640
+    cap.set(4,480) #设置摄像头高度 480
     size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))) #构建宽度和高度的元组
     while cap.isOpened():
         # 读取一帧
@@ -66,17 +66,18 @@ def push_frame(queue, remote_url):
                '-vcodec', 'rawvideo',
                '-pix_fmt', 'bgr24',
 
-               '-s', '1280*720',  # 根据输入视频尺寸填写，要和put_img中设置的宽度和高度一样，不然拿到的画面会跳到
+               '-s', '640x480',  # 根据输入视频尺寸填写，要和put_img中设置的宽度和高度一样，不然拿到的画面会跳到 640x480,320x240
                '-r', '25',
                '-i', '-',  #视频输入是从pipe:0 中来
 
                #视频参数
                '-rtbufsize', '10M',#实时缓存区，需要将流家族到缓冲区，才能操作的
-               '-c:v', 'h264',
+               '-c:v', 'h264', #h264
                '-pix_fmt', 'yuv420p',
-               '-force_key_frames', 'expr:gte(t,n_forced*0.5)',  # 加上这个参数，缩短关键帧时间，减少拉流时间
+               '-force_key_frames', 'expr:gte(t,n_forced*2)',  # 加上这个参数，缩短关键帧时间，减少拉流时间
                '-preset', 'ultrafast',
                '-tune', 'zerolatency',  # 低时延编码，加上后延迟再300毫秒左右，但画质会差一些，建议加上
+               '-r','15',
                # '-sc_threshold', '500',#加上后，延迟在300左右，但画面会卡顿，建议不加
                # '-flvflags', 'no_duration_filesize', #加上后延迟跑到500以上，建议不加
                '-f', 'flv',
@@ -122,6 +123,9 @@ if __name__ == '__main__':
     from util.need import encode_token#token认证
     from util.need import CAR_NUMBER#急救车编号
     from util.need import REMOTE_IP#服务器域名
+    from util.need import check_nobodycar_status #检验医护人员是否点击开始 或 结束 无人车视频 【2023-04-14】
+    from util.need import NOBODY_CAR_URL # 2023-04-14
+    from util.need import NOBODY_CAR_STREAM #2023-04-14 car-0001-nobodycar
     # CAR_NUMBER 急救车编号
     # REMOTE_IP 服务器域名
     # 流地址
@@ -129,7 +133,7 @@ if __name__ == '__main__':
     threading.Thread(target=make_pid_file(os.path.basename(__file__).split('.')[0]+'.txt',os.getpid(),'main')).start()
     print('main 的pid',os.getpid())
 
-    STREAM = f'{CAR_NUMBER}-nobodycar'
+    # STREAM = f'{CAR_NUMBER}-nobodycar'
     '''1、开机时，先等待3秒，再推流操作'''
     print('开机等待3秒，等待电脑运行正常...')
     time.sleep(3)  #正式环境时，再开启
@@ -142,11 +146,16 @@ if __name__ == '__main__':
     PROTOCOL_PORT = data.get('stream_port')
     print(data)
 
+    '''2.1、判断医护人员是否请求开始推送无人车视频【2023-04-14】'''
+    check_nobodycar_status(NOBODY_CAR_URL,CAR_NUMBER)
+    print('医护人员已经点击开始推送无人车视频了...')
+
+
     '''3、获取屏幕数据，推送数据,从获取数据到推送（17秒）'''
     token = encode_token(key=CAR_NUMBER) #生成急救车的token
     maxsize = 4  #存放画面的队列
     queue = mp.Queue(maxsize=maxsize)
-    remote_url = f"rtmp://{REMOTE_IP}:{PROTOCOL_PORT.get('rtmp')}/{CAR_NUMBER}/{STREAM}?token={token}" #远端地址
+    remote_url = f"rtmp://{REMOTE_IP}:{PROTOCOL_PORT.get('rtmp')}/{CAR_NUMBER}/{NOBODY_CAR_STREAM}?token={token}" #远端地址
     put = mp.Process(target=put_img, args=(queue, maxsize)) #获取屏幕画面放到队列中
     put.start()
     co = 1
