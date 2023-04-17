@@ -126,6 +126,7 @@ if __name__ == '__main__':
     from util.need import check_nobodycar_status #检验医护人员是否点击开始 或 结束 无人车视频 【2023-04-14】
     from util.need import NOBODY_CAR_URL # 2023-04-14
     from util.need import NOBODY_CAR_STREAM #2023-04-14 car-0001-nobodycar
+    from util.need import check_nobodycar_status_ws# 检验医护人员是否点击开始 或 结束 无人车视频 [websocket版本]【2023-04-17】
     # CAR_NUMBER 急救车编号
     # REMOTE_IP 服务器域名
     # 流地址
@@ -147,7 +148,7 @@ if __name__ == '__main__':
     print(data)
 
     '''2.1、判断医护人员是否请求开始推送无人车视频【2023-04-14】'''
-    check_nobodycar_status(NOBODY_CAR_URL,CAR_NUMBER)
+    check_nobodycar_status_ws(NOBODY_CAR_URL,CAR_NUMBER)
     print('医护人员已经点击开始推送无人车视频了...')
 
 

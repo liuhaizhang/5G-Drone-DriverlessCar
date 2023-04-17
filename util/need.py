@@ -6,6 +6,9 @@ import base64
 import requests
 import subprocess
 import os
+from websocket import create_connection
+import json
+import time
 
 # 当前急救车编号
 CAR_NUMBER = 'car-0001'
@@ -16,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TIME_FORMAT = time.strftime('%Y-%m-%d')
 TIME_STAMP = time.time()
 #2023-04-14 判断无人车视频是否开始或结束的路由
-NOBODY_CAR_URL = 'https://ambulance.thearay.net/api/srs//control/nobodycar'
+NOBODY_CAR_URL = 'https://ambulance.thearay.net/api/srs/control/nobodycar'
 #2023-04-14 无人车推送的stream
 NOBODY_CAR_STREAM = f'{CAR_NUMBER}-nobodycar'
 
@@ -201,51 +204,45 @@ def check_nobodycar_status(url,car_number,the_type='start'):
             print(f'是否{the_type} 无人车视频等待3秒...')
             time.sleep(3)
 
-#2023-04-14推流杀掉进程，再重新开始
-def restart_nobodycar():
+
+#2023-04-17 websocket请求 检测医护人员是否点击了要推送无人车视频的按钮
+def check_nobodycar_status_ws(url,car_number,the_type='start'):
     '''
-    设置开机自启动，用来控制无人车视频重新推流的操作
+    the_type: start or end
+
     '''
+    url=url
+    dic = {'car': car_number, 'type': the_type, 'stream': 'nobodycar'}
     while True:
-        '''
-        1、开机时是，nobodycar 和 need下的 restart_nobodycar 启动
-        2、中止一次后，就是循环 restart_nobodycar
-        '''
-
-        '1、请求后端，判断是否开始推送无人车视频，开始了才可以结束'
-        check_nobodycar_status(NOBODY_CAR_URL, CAR_NUMBER)
-
-        '2、请求后端，判断是否结束无人车操作或任务结束'
-        check_nobodycar_status(NOBODY_CAR_URL,CAR_NUMBER,the_type='end')
-
-        '3、结束推流无人车视频'
-        path = os.path.join(BASE_DIR,'pid_file','nobodycar.txt')
-        if not os.path.exists(path):
-            while True:
-                if os.path.exists(path):
-                    break
-                time.sleep(5)
-
-        with open(path,'r') as fp:
-            dic = fp.read()
-        os.remove(path)
+        url = 'wss://ambulance.thearay.net:443/api/ws/nobodycar/status'
         try:
-            dic = json.loads(dic)
-            push_pid = dic.get('push')
-            image_pid = dic.get('image')
-            main_pid = dic.get('main')
-
-            push = subprocess.Popen(['taskkill', '-f', '-pid', f'{push_pid}'], shell=False)
-            image = subprocess.Popen(['taskkill', '-f', '-pid', f'{image_pid}'], shell=False)
-            main = subprocess.Popen(['taskkill', '-f', '-pid', f'{main_pid}'], shell=False)
-            print(f'push返回值={push.returncode}, 杀掉推流的进程')
-            print(f'main返回值 = {main.returncode},杀掉播放的主进程')
-            print(f'play返回值 = {image.returncode}，杀掉播放的子进程')
+            ws = create_connection(url)
+            print('循环....')
+            while True:
+                send_dic = json.dumps(dic)
+                ws.send(send_dic)
+                recv_dic = ws.recv()
+                recv_dic = json.loads(recv_dic)
+                if 'start' in recv_dic.keys():
+                    if recv_dic.get('start') == 'yes':
+                        print('可以开始推流了')
+                        return '可以开始推流'
+                    else:
+                        print(recv_dic)
+                        print(f'不可以推无人车视频，等待5秒...')
+                        time.sleep(5)
+                elif 'end' in recv_dic.keys():
+                    if recv_dic.get('end') == 'yes':
+                        print('可以结束推流了')
+                        return '可以结束推流'
+                    else:
+                        print(recv_dic)
+                        print(f'不可以结束推无人车视频，等待10秒...')
+                        time.sleep(10)
+                else:
+                    print('服务器携带了错误的数据')
+                    break
         except Exception as e:
-            pass
-        '4、重新执行推流无人车视频（进入新的循环）'
-        subprocess.Popen(['python',f'{os.path.join(BASE_DIR, "nobodycar.py")}'], stdin=subprocess.PIPE, shell=True)
-
-
-if __name__ == '__main__':
-    restart_nobodycar()
+            print(str(e))
+            print(f'是否{the_type} 无人车视频等待3秒...')
+            time.sleep(3)
