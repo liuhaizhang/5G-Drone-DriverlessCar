@@ -122,6 +122,8 @@ if __name__ == '__main__':
     # CAR_NUMBER 急救车编号
     # REMOTE_IP 服务器域名
     # 无人机视频流地址
+
+
     STREAM = f'{CAR_NUMBER}-drone'
     '''1、开机时，先等待3秒，再推流操作'''
     print('开机等待3秒，等待电脑运行正常...')

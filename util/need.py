@@ -19,7 +19,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TIME_FORMAT = time.strftime('%Y-%m-%d')
 TIME_STAMP = time.time()
 #2023-04-14 判断无人车视频是否开始或结束的路由
-NOBODY_CAR_URL = 'https://ambulance.thearay.net/api/srs/control/nobodycar'
 NOBODY_CAR_URL_WS = 'wss://ambulance.thearay.net:443/api/ws/nobodycar/status'
 #2023-04-14 无人车推送的stream
 NOBODY_CAR_STREAM = f'{CAR_NUMBER}-nobodycar'
@@ -171,51 +170,16 @@ def make_pid_file(filename,pid,who):
         log_file = filename.split('.')[0] +'/'+time.strftime(TIME_FORMAT)+'.log'
         public_write_log(log_file,f'{e}')
 
-#2023-04-14 检测医护人员是否点击了要推送无人车视频的按钮 【走http请求】
-def check_nobodycar_status(url,car_number,the_type='start'):
-    '''
-    the_type: start or end
-
-    '''
-    while True:
-        try:
-            ret = requests.get(url=url,params={'car':car_number,'type':the_type,'stream':'nobodycar'})
-            if ret.status_code in [200,'200']:
-                dic = ret.json()
-                print(dic)
-                if dic.get(the_type) =='yes':
-                    print('退出循环。')
-                    break
-                else:
-                    #医护人员没有请求开启无人车推流操作，或没有点击结束无人车推流视频
-                    if the_type =='start':
-                        print(f'是否{the_type} 无人车视频等待5秒...')
-                        time.sleep(5)
-                    else:
-                        print(f'是否{the_type} 无人车视频等待10秒...')
-                        time.sleep(10)
-            else:
-                if the_type == 'start':
-                    print(f'是否{the_type}推送无人车视频，等待5秒...')
-                    time.sleep(5)
-                else:
-                    print(f' 是否{the_type}推送无人车视频，等待10秒...')
-                    time.sleep(10)
-        except Exception as e:
-            print(f'是否{the_type} 无人车视频等待3秒...')
-            time.sleep(3)
-
-
 #2023-04-17 websocket请求 检测医护人员是否点击了要推送无人车视频的按钮【走ws请求】
 def check_nobodycar_status_ws(url,car_number,the_type='start'):
     '''
     the_type: start or end
 
     '''
-    url=url
+    # url=url
     dic = {'car': car_number, 'type': the_type, 'stream': 'nobodycar'}
     while True:
-        url = 'wss://ambulance.thearay.net:443/api/ws/nobodycar/status'
+        # url = 'wss://ambulance.thearay.net:443/api/ws/nobodycar/status'
         try:
             ws = create_connection(url)
             print('循环....')
