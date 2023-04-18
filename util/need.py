@@ -20,6 +20,7 @@ TIME_FORMAT = time.strftime('%Y-%m-%d')
 TIME_STAMP = time.time()
 #2023-04-14 判断无人车视频是否开始或结束的路由
 NOBODY_CAR_URL = 'https://ambulance.thearay.net/api/srs/control/nobodycar'
+NOBODY_CAR_URL_WS = 'wss://ambulance.thearay.net:443/api/ws/nobodycar/status'
 #2023-04-14 无人车推送的stream
 NOBODY_CAR_STREAM = f'{CAR_NUMBER}-nobodycar'
 
@@ -62,7 +63,7 @@ def encode_token(key, expire=2*24*60*60):
     b64_token = base64.urlsafe_b64encode(token.encode("utf-8"))
     return b64_token.decode("utf-8")
 
-#查看当前急救车是否有急救任务【所有脚本都使用】
+#查看当前急救车是否有急救任务【所有脚本都使用】【走http请求】
 def check_ambulance_status(url,car_number):
     '''
     检测当前急救车是否有急救任务的，如果没有就把访问频率降低
@@ -170,7 +171,7 @@ def make_pid_file(filename,pid,who):
         log_file = filename.split('.')[0] +'/'+time.strftime(TIME_FORMAT)+'.log'
         public_write_log(log_file,f'{e}')
 
-#2023-04-14 检测医护人员是否点击了要推送无人车视频的按钮
+#2023-04-14 检测医护人员是否点击了要推送无人车视频的按钮 【走http请求】
 def check_nobodycar_status(url,car_number,the_type='start'):
     '''
     the_type: start or end
@@ -205,7 +206,7 @@ def check_nobodycar_status(url,car_number,the_type='start'):
             time.sleep(3)
 
 
-#2023-04-17 websocket请求 检测医护人员是否点击了要推送无人车视频的按钮
+#2023-04-17 websocket请求 检测医护人员是否点击了要推送无人车视频的按钮【走ws请求】
 def check_nobodycar_status_ws(url,car_number,the_type='start'):
     '''
     the_type: start or end
@@ -234,6 +235,8 @@ def check_nobodycar_status_ws(url,car_number,the_type='start'):
                 elif 'end' in recv_dic.keys():
                     if recv_dic.get('end') == 'yes':
                         print('可以结束推流了')
+                        #脚本拿到可以结束推流的标识后，返回给后端，后端更新数据 start=no,end=no
+                        ws.send('yes')
                         return '可以结束推流'
                     else:
                         print(recv_dic)
@@ -246,3 +249,6 @@ def check_nobodycar_status_ws(url,car_number,the_type='start'):
             print(str(e))
             print(f'是否{the_type} 无人车视频等待3秒...')
             time.sleep(3)
+
+if __name__ == '__main__':
+    print(encode_token('car-0001'))
