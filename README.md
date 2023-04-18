@@ -1,4 +1,6 @@
 # 5G_drone_nobodycar
+### 一、结构数据
+
 急救车端的推流脚本
 需要使用到的结构：
 
@@ -15,6 +17,28 @@
 
 4、nobodycar.py 推送无人车视频到srs服务器上【无人车的画面在遥控器平板可以看到，拿的是平板的屏幕画面】
 
+5、util/run_nobodycar.py  无人车推流的启动文件
+
 
 
 需要将无人车和无人机的平板连接到主机上，这些代码机就在这个主机上。
+
+
+
+
+
+### 二、启动文件：
+
+util/nobodycar.py   : 设置成开机自启动方式
+
+```
+2.1、在电脑地址栏输入：C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp
+2.2、在该文件夹中创建
+	camaro.bat   文件
+	
+	#文件内容：
+	C:
+	cd  C:\\data\\project\\5G_drone_nobodycar\\util
+	python run_nobodycar.py
+```
+
