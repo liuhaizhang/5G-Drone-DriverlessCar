@@ -24,7 +24,7 @@ def put_img(queue, maxsize):
 
     '''2、获取摄像头的数据，这个没有部分使用多线程'''
     # 视频读取对象
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     cap.set(3,640) #设置摄像头宽度  640
     cap.set(4,480) #设置摄像头高度 480
     size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))) #构建宽度和高度的元组

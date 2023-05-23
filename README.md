@@ -29,7 +29,7 @@
 
 ### 二、启动文件：
 
-util/nobodycar.py   : 设置成开机自启动方式
+util/run_nobodycar.py   : 设置成开机自启动方式
 
 ```
 2.1、在电脑地址栏输入：C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp
@@ -40,5 +40,37 @@ util/nobodycar.py   : 设置成开机自启动方式
 	C:
 	cd  C:\\data\\project\\5G_drone_nobodycar\\util
 	python run_nobodycar.py
+```
+
+
+
+### 三、无人车视频推流的开始和结束
+
+1、允许无人车开始推流：
+
+```
+url=https://ambulance.thearay.net/api/srs//control/nobodycar
+method=POST
+content-type = application/form-data
+请求体数据：
+car_id = 无人车id（急救车表）
+type = start   #说明是允许无人车开始推流
+stream = nobodycar  #用来构建存到cache中的key  【脚本与后端进行websocket，获取是否允许该无人车开始推流】
+
+```
+
+
+
+2、允许无人车结束推流：
+
+```
+url=https://ambulance.thearay.net/api/srs//control/nobodycar
+method=POST
+content-type = application/form-data
+请求体数据：
+car_id = 无人车id（急救车表）
+type = end   #说明是允许无人车结束推流
+stream = nobodycar  #用来构建存到cache中的key 【脚本与后端进行websocket，获取是否允许该无人车结束推流】
+
 ```
 

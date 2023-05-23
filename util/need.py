@@ -10,8 +10,8 @@ from websocket import create_connection
 import json
 import time
 
-# 当前急救车编号
-CAR_NUMBER = 'car-0001'
+# 当前急救车编号【无人车编号】
+CAR_NUMBER = 'car-0003'
 # srs服务器的web端
 REMOTE_IP = 'ambulance.thearay.net'
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
