@@ -1,9 +1,10 @@
 import time
-# from need import NOBODY_CAR_URL_WS, CAR_NUMBER,BASE_DIR,check_nobodycar_status_ws
+from need import NOBODY_CAR_URL_WS, CAR_NUMBER,BASE_DIR,check_nobodycar_status_ws
+# from util.need import NOBODY_CAR_URL_WS,CAR_NUMBER,BASE_DIR,check_nobodycar_status_ws  #使用脚本启动会报错的
 import os
 import subprocess
 import json
-from util.need import NOBODY_CAR_URL_WS,CAR_NUMBER,BASE_DIR,check_nobodycar_status_ws
+
 
 #推流脚本的路径
 NOBODYCAR_PATH = os.path.join(BASE_DIR,'nobodycar.py',)
