@@ -1,8 +1,9 @@
 import time
-from need import NOBODY_CAR_URL_WS, CAR_NUMBER,BASE_DIR,check_nobodycar_status_ws
+# from need import NOBODY_CAR_URL_WS, CAR_NUMBER,BASE_DIR,check_nobodycar_status_ws
 import os
 import subprocess
 import json
+from util.need import NOBODY_CAR_URL_WS,CAR_NUMBER,BASE_DIR,check_nobodycar_status_ws
 
 #推流脚本的路径
 NOBODYCAR_PATH = os.path.join(BASE_DIR,'nobodycar.py',)
@@ -55,7 +56,7 @@ def restart_nobodycar():
         except Exception as e:
             pass
         '4、重新执行推流无人车视频（进入新的循环）'
-        subprocess.Popen(['python',f'{os.path.join(BASE_DIR, "nobodycar.py")}'], stdin=subprocess.PIPE, shell=True)
+        subprocess.Popen(['python',f'{NOBODYCAR_PATH}'], stdin=subprocess.PIPE, shell=True)
 
 if __name__ == '__main__':
     restart_nobodycar()
